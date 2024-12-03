@@ -1,0 +1,31 @@
+.dashboard-content {
+  background-color: white; 
+  width: 100%;
+  padding: 0;
+}
+
+.dashboard-inner {
+  max-width: 1200px;
+  margin: 0 auto; 
+  padding: 0 16px; 
+}
+
+.dashboard-main {
+  min-height: calc(56vh - 10px); 
+  padding: 16px 0;
+}
+
+.logo {
+  width: 100px;
+}
+
+.nav-button {
+  width: 100px;
+}
+
+.icon-border {
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  padding: 10px;
+  background-color: white;
+}

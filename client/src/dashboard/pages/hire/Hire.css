@@ -1,0 +1,31 @@
+/* Hire.css */
+.tab {
+    cursor: pointer;
+    padding: 10px;
+    position: relative;
+    font-size: 18px; /* Adjust font size as needed */
+  }
+  
+  .tab.active {
+    color: #007bff; /* Change text color for the active tab */
+  }
+  
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -5px; /* Position the line below the tab */
+    transform: translateX(-50%);
+    width: 100%;
+    height: 3px; /* Height of the line */
+    background-color: #007bff; /* Color of the line */
+  }
+  
+  .order-button {
+    background-color: #b8860b; /* Brown/gold color */
+    border: none; /* Remove border */
+  }
+  
+  .order-button:hover {
+    background-color: #cd853f; /* Darker shade on hover */
+  }

@@ -1,0 +1,36 @@
+
+
+
+
+
+
+
+
+
+
+  .custom-nav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .custom-nav-item {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #000;
+    transition: all 0.3s;
+  }
+  
+  .custom-nav-item.active {
+    background-color: #078bc8;
+    color: #fff;
+    border-color: #078bc8;
+  }
+  
+  .custom-nav-item:hover {
+    background-color: #f0f8ff;
+    color: #078bc8;
+  }
+  

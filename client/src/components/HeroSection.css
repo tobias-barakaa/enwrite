@@ -1,0 +1,31 @@
+.hero-layout {
+    background: linear-gradient(to right, rgba(169, 169, 169, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(169, 169, 169, 0.1) 1px, transparent 1px);
+    background-size: 250px 250px;
+    background-position: calc(100px/1.6) calc(100px/2);
+  }
+  
+  .bg-image {
+    border-radius: 8px;
+    width: 100%;
+    height: auto;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .bg-image:hover {
+    transform: scale(1.02);
+  }
+  
+  .get-in-touch:hover::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #0066ff;
+    transition: width 0.3s ease;
+  }
+  

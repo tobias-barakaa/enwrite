@@ -1,0 +1,15 @@
+.auth-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .auth-links span a {
+    text-decoration: none;
+    color: #007bff; /* Bootstrap-like link color */
+  }
+  
+  .auth-links span a:hover {
+    text-decoration: underline;
+  }
+  
