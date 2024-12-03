@@ -1,13 +1,14 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetOrderQuery, useGetPayPalClientIdQuery, usePayOrderMutation } from '../../../slices/orderApiSlice';
-import { Container, Row, Col, Card, Spinner, Badge, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Spinner, Badge } from 'react-bootstrap';
 import { PayPalButtons, PayPalScriptProvider} from '@paypal/react-paypal-js';
 import { OnApproveData, OnApproveActions } from "@paypal/paypal-js";
 
 import { useState } from 'react';
 import { BrickWall, Languages, NotebookTabs, ShipWheel, TimerIcon, WrapText } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { PaypalDetails } from '../../../slices/orderApiSlice';
 import './ContentOrder.css'; 
 
 
@@ -18,13 +19,14 @@ const ContentOrder: React.FC = () => {
   const { data, isLoading } = useGetOrderQuery(id || '');
   const [showDetails, setShowDetails] = useState(false);
    const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+   
 
 
   const { data: paypal, isLoading: loadingPayPal } = useGetPayPalClientIdQuery({});
 
 
  
-  function createOrder(_: any, actions: any) {
+  function createOrder(_: unknown, actions: { order: { create: (data: { intent: "CAPTURE"; purchase_units: { amount: { currency_code: string; value: string } }[]; description: string }) => Promise<string> } }) {
     if (!data?.order) {
       throw new Error('Order data is not available');
     }
@@ -44,20 +46,24 @@ const ContentOrder: React.FC = () => {
     }
   
     return actions.order.create({
+      intent: "CAPTURE",
       purchase_units: [
         {
           amount: {
             currency_code: "USD",
             value: (parsedCost * parsedQuantity).toFixed(2),
           },
-          description: `Order #${id}`,
         },
       ],
+      description: `Order #${id}`,
     });
+    
   }
+
   
   
-  async function onApprove(data: OnApproveData, actions: OnApproveActions) {
+  
+  async function onApprove(_: OnApproveData, actions: OnApproveActions) {
     if (!actions?.order) {
       throw new Error('PayPal order actions are not available');
     }
@@ -66,22 +72,25 @@ const ContentOrder: React.FC = () => {
       const details = await actions.order.capture();
       console.log('Payment captured successfully:', details);
   
-      // Call your mutation to update the backend with payment details
+      const paymentDetails = {
+        transactionId: details.id,  // PayPal transaction ID
+        status: details.status,
+        amount: parseFloat(details.purchase_units?.[0]?.amount?.value || '0'),
+        email: details.payer?.email_address || '',  
+        payerId: details.payer?.payer_id || '',  
+      };
+  
+      console.log('Formatted payment details:', paymentDetails);
+  
       await payOrder({
-        id,
-        details: {
-          transaction_id: details.id,
-          status: details.status,
-          update_time: details.update_time,
-          payer: {
-            email_address: details.payer.email_address,
-            name: details.payer.name,
-            payer_id: details.payer.payer_id,
-          },
-        },
+        orderId: id || '',
+        details: paymentDetails as PaypalDetails,
       }).unwrap();
   
       toast.success('Payment completed successfully!');
+  
+      window.location.reload(); 
+  
     } catch (error) {
       console.error('Error capturing payment:', error);
       toast.error(
@@ -91,79 +100,15 @@ const ContentOrder: React.FC = () => {
   }
   
   
+  
+  
+  
 
-  async function onApproveTest() {
-    try {
-      const response = await payOrder({
-        orderId: data?.order.id,
-        details: {
-          transactionId: 'TEST123456',
-          payerId: 'TESTPAYERID',
-          status: 'COMPLETED',
-          email: 'testpayer@example.com',
-          amount: 0,
-        },
-      });
-
-      if (response?.data?.message === 'Order and payment details updated successfully') {
-        // setDate((prevOrder) => ({
-        //   ...prevOrder,
-        //   is_paid: true,
-        // }));
-        // setIsPaid(true); // Mark payment as completed
-        alert('Test payment success');
-      } else {
-        throw new Error('Unexpected response from payment API');
-      }
-    } catch (error) {
-      console.error('Test payment error:', error);
-      alert('Test payment failed. Please try again.');
-    }
-  }
 
 function onError(error: { message?: string }) {
   console.error('PayPal error:', error);
   toast.error(error?.message || 'An error occurred with PayPal');
 }
-
-// function createOrder(data, actions) {
-//   console.log('Data object:', data);
-//   console.log('Order object:', data?.order);
-
-//   const cost = parseFloat(data?.order?.cost || '0'); 
-// const quantity = parseInt(data?.order?.quantity || '1', 10); 
-
-//   console.log('Parsed cost:', cost, 'Parsed quantity:', quantity);
-
-//   if (isNaN(cost) || cost <= 0) {
-//     console.error('Invalid cost:', cost);
-//     throw new Error('Invalid cost provided for the order.');
-//   }
-
-//   if (isNaN(quantity) || quantity <= 0) {
-//     console.error('Invalid quantity:', quantity);
-//     throw new Error('Invalid quantity provided for the order.');
-//   }
-
-//   return actions.order
-//     .create({
-//       purchase_units: [
-//         {
-//           amount: {
-//             value: (cost * quantity).toFixed(2),
-//           },
-//         },
-//       ],
-//     })
-//     .then((orderId) => {
-//       console.log('Order ID created:', orderId);
-//       return orderId;
-//     })
-//     .catch((error) => {
-//       console.error('Error creating order:', error);
-//       throw new Error('Failed to create PayPal order');
-//     });
-// }
 
 
 
@@ -273,7 +218,6 @@ function onError(error: { message?: string }) {
                 <Card.Body className="p-4">
                   <h4 className="mb-4">Payment Details</h4>
                   
-                  {/* Price Summary */}
                   <div className="bg-light p-4 rounded mb-4">
                     <div className="d-flex justify-content-between mb-3">
                       <span className="text-muted">Base Price</span>
@@ -292,19 +236,15 @@ function onError(error: { message?: string }) {
                     </div>
                   </div>
 
-                  {/* PayPal Button */}
                   {!data?.order.is_paid && (
                     <div>
                       {loadingPay && loadingPayPal}
                       
                         <div>
-                          <Button
-                          onClick={onApproveTest}
-                          style={{ marginBottom: "20px" }}
-                          >Test Pay Order</Button>
+                         
                           <div>
                             <PayPalButtons
-                              createOrder={(data, actions) => createOrder(data, actions)}
+                              createOrder={createOrder}
                             onApprove={onApprove}
                             onError={onError}></PayPalButtons>
                           </div>
@@ -321,7 +261,6 @@ function onError(error: { message?: string }) {
   );
 };
 
-// Helper component for detail items
 const DetailItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ 
   icon, 
   label, 

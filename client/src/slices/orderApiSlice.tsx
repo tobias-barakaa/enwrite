@@ -39,6 +39,15 @@ interface CreateOrderInput {
   language: string;
 }
 
+export interface PaypalDetails {
+  transactionId: string;
+  status: string;
+  amount: number;
+  email: string;
+  payerId: string;
+}
+  
+
 const ordersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     createOrder: builder.mutation<typeOrder, CreateOrderInput>({  
@@ -55,7 +64,7 @@ const ordersApiSlice = apiSlice.injectEndpoints({
     getOrdersByUser: builder.query<OrderResponse[], string>({
       query: (id: string) => `${ORDER_URL}/getall/${id}`,
     }),
-    payOrder: builder.mutation<typeOrder, { orderId: string; details: CreateOrderInput }>({
+    payOrder: builder.mutation<typeOrder, { orderId: string; details: PaypalDetails }>({
       query: ({ orderId, details }) => ({
         url: `${ORDER_URL}/update/${orderId}`,
         method: 'PUT',

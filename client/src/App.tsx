@@ -17,6 +17,8 @@ import InvoiceComponent from './dashboard/pages/payments/invoice/Invoice';
 import PaymentMethod from './dashboard/pages/payments/invoice/PaymentMethod';
 import WorkRoom from './dashboard/pages/manage/WorkRoom';
 import MyOrders from './dashboard/pages/manage/MyOrders';
+import { ToastContainer } from 'react-toastify';
+
 
 const router = createBrowserRouter([
   {
@@ -111,6 +113,8 @@ function App() {
 
   return (
     <>
+        <ToastContainer />
+
       <RouterProvider router={router} />
     </>
   )
