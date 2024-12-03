@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createOrderArticleValidation } from "../middlewares/articleValidation";
-import { createOrderArticle, getAllUserOrders, getOrderArticleById, updateOrderToPaid } from "../controllers/order.controller";
+import { createOrderArticle, getAllUserOrders, getOrderArticleById, getUserInvoices, updateOrderToPaid } from "../controllers/order.controller";
 import { protect } from "../utils/user.authenticate";
 import { protectUser } from "../middlewares/authMiddleware";
 import { Request, Response } from "express";
@@ -17,6 +17,8 @@ router.put("/v2/update/:id", protectUser, updateOrderToPaid);
 router.get('/config/paypal', (req: Request, res: Response): void => {
     res.send({ clientId: process.env.PAYPAL_CLIENT_ID });
   });
+
+router.get('/v2/invoice/getall', protectUser, getUserInvoices)
   
 
 export default router;
