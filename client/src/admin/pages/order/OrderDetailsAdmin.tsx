@@ -58,22 +58,22 @@ const OrderDetailsAdmin: React.FC = () => {
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setSelectedFile(event.target.files[0]);
-    }
-  };
-
-
-//   const handleFileChange = (e) => {
-//     const selectedFile = e.target.files[0];
-//     if (selectedFile && (selectedFile.type === 'application/pdf' || selectedFile.type === 'text/csv')) {
-//       setFile(selectedFile);
-//     } else {
-//       alert('Please upload only PDF or CSV files.');
-//       e.target.value = null;
+//   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+//     if (event.target.files && event.target.files[0]) {
+//       setSelectedFile(event.target.files[0]);
 //     }
 //   };
+
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && (selectedFile.type === 'application/pdf' || selectedFile.type === 'text/csv')) {
+      setSelectedFile(selectedFile);
+    } else {
+      alert('Please upload only PDF or CSV files.');
+      e.target.value = null;
+    }
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
