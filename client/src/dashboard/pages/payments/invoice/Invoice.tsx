@@ -1,146 +1,94 @@
 import React, { useState } from 'react';
-import { Container, Table, Badge, Button } from 'react-bootstrap';
+import { Container, Table, Badge, Button, Spinner } from 'react-bootstrap';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-
-interface Invoice {
-  id: string;
-  date: string;
-  dueDate: string;
-  amount: number;
-  status: 'paid' | 'pending' | 'overdue';
-  description: string;
-  items: InvoiceItem[];
-}
-
-interface InvoiceItem {
-  id: string;
-  description: string;
-  quantity: number;
-  rate: number;
-  amount: number;
-}
+import { useInvoiceQuery } from '../../../../slices/orderApiSlice'; // Adjust import path as needed
 
 const InvoiceComponent: React.FC = () => {
   const [loader, setLoader] = useState(false);
 
-  // Sample static data
-  const invoice: Invoice = {
-    id: 'INV-2024-001',
-    date: '2024-03-20',
-    dueDate: '2024-04-20',
-    amount: 1250.00,
-    status: 'pending',
-    description: 'Content Writing Services - March 2024',
-    items: [
-      {
-        id: '1',
-        description: 'Blog Articles (2000 words)',
-        quantity: 5,
-        rate: 200,
-        amount: 1000
-      },
-      {
-        id: '2',
-        description: 'SEO Optimization',
-        quantity: 1,
-        rate: 250,
-        amount: 250
-      }
-    ]
-  };
+  // Fetch invoices dynamically
+  const { data, isLoading, error } = useInvoiceQuery({});
+  const invoices = data?.invoices; // Safely access the invoices array
 
-  const getStatusBadge = (status: Invoice['status']) => {
-    const variants = {
-      paid: 'success',
-      pending: 'warning',
-      overdue: 'danger'
+  // Debug logs for lifecycle
+  console.log('Invoices Data:', { isLoading, error, invoices });
+
+  // Handle badge rendering for payment status
+  const getStatusBadge = (status: string) => {
+    const variants: { [key: string]: string } = {
+      Paid: 'success',
+      Pending: 'warning',
+      Overdue: 'danger',
     };
-    return <Badge bg={variants[status]}>{status.toUpperCase()}</Badge>;
+    return <Badge bg={variants[status] || 'secondary'}>{status.toUpperCase()}</Badge>;
   };
 
-  const downloadPdf = () => {
-    const capture = document.querySelector('.download-pdf');
+  // Handle PDF download for a specific invoice
+  const downloadPdf = (invoiceId: string) => {
+    const capture = document.querySelector(`#invoice-${invoiceId}`);
     setLoader(true);
-  
-    html2canvas(capture, {
-      scale: 2, // Increase scale for better quality
-      useCORS: true, // Ensure cross-origin images are fetched properly
-      logging: true, // Optionally log for debugging
-    }).then((canvas) => {
+
+    if (!capture) {
+      setLoader(false);
+      return;
+    }
+
+    html2canvas(capture as HTMLElement, { scale: 2 }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-  
-      const componentWidth = pdf.internal.pageSize.getWidth();
-      
-      // Scale the canvas to fit the PDF size
-      const imgWidth = componentWidth;
+
+      const imgWidth = pdf.internal.pageSize.getWidth();
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-
-  
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-  
       setLoader(false);
-      pdf.save('invoice.pdf');
+      pdf.save(`invoice-${invoiceId}.pdf`);
     });
   };
-  
+
+  // Loading state
+  if (isLoading) return <Spinner animation="border" className="d-block mx-auto" />;
+
+  // Error or empty data handling
+  if (error || !invoices?.length) {
+    return (
+      <Container className="py-4">
+        <p className="text-danger text-center">No invoices found or failed to fetch data.</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-4">
-      <div className='download-pdf'>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h5>Invoice #{invoice.id}</h5>
-          <div>{getStatusBadge(invoice.status)}</div>
-        </div>
+      {invoices.map((invoice) => (
+        <div key={invoice.id} id={`invoice-${invoice.id}`} className="mb-5 border rounded p-4">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h5>Invoice #{invoice.invoice_number}</h5>
+            <div>{getStatusBadge(invoice.payment_status)}</div>
+          </div>
 
-        <div className="border rounded p-4 mb-4 bg-light">
-          <div className="row">
-            <div className="col-md-6">
-              <p className="mb-1"><strong>Issue Date:</strong> {invoice.date}</p>
-              <p className="mb-1"><strong>Due Date:</strong> {invoice.dueDate}</p>
-            </div>
-            <div className="col-md-6 text-md-end">
-              <p className="mb-1"><strong>Total Amount:</strong> ${invoice.amount.toFixed(2)}</p>
+          <div className="border rounded p-3 mb-4 bg-light">
+            <div className="row">
+              <div className="col-md-6">
+                <p><strong>Description:</strong> {invoice.description}</p>
+                <p><strong>Quantity:</strong> {invoice.quantity}</p>
+              </div>
+              <div className="col-md-6 text-md-end">
+                <p><strong>Amount:</strong> ${parseFloat(invoice.amount).toFixed(2)}</p>
+                <p><strong>Status:</strong> {invoice.order_status}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mb-4">
-          <h6>Items</h6>
-          <Table responsive bordered hover>
-            <thead className="bg-light">
-              <tr>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoice.items.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.description}</td>
-                  <td>{item.quantity}</td>
-                  <td>${item.rate.toFixed(2)}</td>
-                  <td>${item.amount.toFixed(2)}</td>
-                </tr>
-              ))}
-              <tr className="fw-bold">
-                <td colSpan={3} className="text-end">Total</td>
-                <td>${invoice.amount.toFixed(2)}</td>
-              </tr>
-            </tbody>
-          </Table>
+          <div className="d-flex justify-content-end gap-2">
+            <Button variant="outline-secondary" onClick={() => downloadPdf(invoice.id)}>
+              {loader ? 'Downloading...' : 'Download PDF'}
+            </Button>
+            <Button variant="primary">Pay Now</Button>
+          </div>
         </div>
-      </div>
-
-      <div className="d-flex justify-content-end gap-2">
-        {/* Pass downloadPdf function as a reference */}
-        <Button variant="outline-secondary" onClick={downloadPdf}>Download PDF</Button>
-        <Button variant="primary">Pay Now</Button>
-      </div>
+      ))}
     </Container>
   );
 };

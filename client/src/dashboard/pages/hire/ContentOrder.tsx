@@ -18,7 +18,7 @@ const ContentOrder: React.FC = () => {
   const { id } = useParams();
   const { data, isLoading } = useGetOrderQuery(id || '');
   const [showDetails, setShowDetails] = useState(false);
-   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
    
 
 
