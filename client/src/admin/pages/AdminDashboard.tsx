@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Table, Badge } from 'react-bootstrap';
 import './AdminDashboard.css';
+import { useGetRecentQuery } from '../../slices/admin/adminOrderApiSlice';
 
 interface User {
   id: number;
@@ -26,6 +27,9 @@ interface PendingItem {
 }
 
 const AdminDashboard: React.FC = () => {
+
+  const { data: recent, isLoading, error }: { data: any; isLoading: boolean; error: any } = useGetRecentQuery({});
+  console.log(recent, 'love me')
   const [users] = useState<User[]>([
     { id: 1, name: 'John Doe', email: 'john@example.com', status: 'active', joinDate: '2024-01-15' },
     { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'active', joinDate: '2024-02-01' },

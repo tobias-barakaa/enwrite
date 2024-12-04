@@ -4,3 +4,7 @@ export const LOGIN_URL = 'api/v2';
 
 export const ORDER_URL = '/api/order/v2';
 export const PAYPAL_URL = '/api/order/config/paypal';
+
+
+//Admin
+export const ORDER_ADMIN_URL = '/api/admin/order/v3'

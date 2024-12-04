@@ -26,7 +26,7 @@ const LoginAdmin: React.FC = () => {
       try {
         const userData = await login(formData).unwrap();
         dispatch(setCredentials(userData));
-        navigate('/admin/admin-dashboard');
+        navigate('/admin/dashboard');
       } catch (err) {
         console.error('Login failed:', err);
       }
