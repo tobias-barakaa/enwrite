@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
-import { Container, Table, Badge, Button, Spinner } from 'react-bootstrap';
+import { Container, Badge, Button, Spinner } from 'react-bootstrap';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { useInvoiceQuery } from '../../../../slices/orderApiSlice'; // Adjust import path as needed
+import { useInvoiceQuery } from '../../../../slices/orderApiSlice'; 
 
 const InvoiceComponent: React.FC = () => {
   const [loader, setLoader] = useState(false);
 
-  // Fetch invoices dynamically
   const { data, isLoading, error } = useInvoiceQuery({});
-  const invoices = data?.invoices; // Safely access the invoices array
+  const invoices = data?.invoices;
 
-  // Debug logs for lifecycle
   console.log('Invoices Data:', { isLoading, error, invoices });
 
-  // Handle badge rendering for payment status
   const getStatusBadge = (status: string) => {
     const variants: { [key: string]: string } = {
       Paid: 'success',
@@ -24,7 +21,6 @@ const InvoiceComponent: React.FC = () => {
     return <Badge bg={variants[status] || 'secondary'}>{status.toUpperCase()}</Badge>;
   };
 
-  // Handle PDF download for a specific invoice
   const downloadPdf = (invoiceId: string) => {
     const capture = document.querySelector(`#invoice-${invoiceId}`);
     setLoader(true);
@@ -47,10 +43,8 @@ const InvoiceComponent: React.FC = () => {
     });
   };
 
-  // Loading state
   if (isLoading) return <Spinner animation="border" className="d-block mx-auto" />;
 
-  // Error or empty data handling
   if (error || !invoices?.length) {
     return (
       <Container className="py-4">
@@ -61,7 +55,7 @@ const InvoiceComponent: React.FC = () => {
 
   return (
     <Container className="py-4">
-      {invoices.map((invoice) => (
+      {invoices.map((invoice: { id: string; invoice_number: string; payment_status: string; description: string; quantity: number; amount: string; order_status: string; }) => (
         <div key={invoice.id} id={`invoice-${invoice.id}`} className="mb-5 border rounded p-4">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h5>Invoice #{invoice.invoice_number}</h5>

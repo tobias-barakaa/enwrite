@@ -18,6 +18,8 @@ import PaymentMethod from './dashboard/pages/payments/invoice/PaymentMethod';
 import WorkRoom from './dashboard/pages/manage/WorkRoom';
 import MyOrders from './dashboard/pages/manage/MyOrders';
 import { ToastContainer } from 'react-toastify';
+import LoginAdmin from './admin/pages/LoginAdmin';
+import AdminDashboard from './admin/pages/AdminDashboard';
 
 
 const router = createBrowserRouter([
@@ -106,6 +108,20 @@ const router = createBrowserRouter([
     
   ]
 },
+{
+  path: 'admin',
+  element: <LoginAdmin />,
+  children: [
+    {
+      index: true,
+      element: <AdminDashboard />
+    },
+    {
+      path: 'admin-dashboard',
+      element: <AdminDashboard />
+    }
+  ]
+}
 
 ])
 
