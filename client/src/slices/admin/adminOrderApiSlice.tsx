@@ -1,4 +1,4 @@
-import { ORDER_ADMIN_URL } from '../../constants';
+import { ADMIN_USERS_URL, ORDER_ADMIN_URL } from '../../constants';
 import { apiSlice } from '../apiSlice';
 
   
@@ -10,11 +10,25 @@ const ordersAdminApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${ORDER_ADMIN_URL}/recent`,
       }),
-      keepUnusedDataFor: 5 * 60 * 1000,
+      keepUnusedDataFor: 5,
       
-    })
+    }),
+    getUsers: builder.query({
+        query: () => ({
+          url: `${ADMIN_USERS_URL}/users`,
+        }),
+        keepUnusedDataFor: 5,
+        
+      }),
+      getOrderById: builder.query({
+        query: (id) => ({
+          url: `${ORDER_ADMIN_URL}/getorderbyid/${id}`,
+        }),
+        keepUnusedDataFor: 5,
+        
+      })
   }),
 });
 
-export const { useGetRecentQuery } = ordersAdminApiSlice;
+export const { useGetRecentQuery, useGetUsersQuery, useGetOrderByIdQuery } = ordersAdminApiSlice;
 export { ordersAdminApiSlice };

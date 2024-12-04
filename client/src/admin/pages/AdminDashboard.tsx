@@ -1,22 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Table, Badge } from 'react-bootstrap';
 import './AdminDashboard.css';
-import { useGetRecentQuery } from '../../slices/admin/adminOrderApiSlice';
+import { useGetRecentQuery, useGetUsersQuery } from '../../slices/admin/adminOrderApiSlice';
+import { Link } from 'react-router-dom';
 
 interface User {
-  id: number;
-  name: string;
-  email: string;
-  status: 'active' | 'inactive';
-  joinDate: string;
+  username: string;
+  role_name: string;
 }
 
+interface UserResponse {
+  success: boolean;
+  message: string;
+  data: User[];
+}
 interface Order {
   id: number;
   customer: string;
-  amount: number;
+  amount: string;
   status: 'completed' | 'processing' | 'cancelled';
   date: string;
+  username: string;
+  message: string;
+  is_paid: boolean;
 }
 
 interface PendingItem {
@@ -26,21 +32,38 @@ interface PendingItem {
   priority: 'high' | 'medium' | 'low';
 }
 
+
+
 const AdminDashboard: React.FC = () => {
 
-  const { data: recent, isLoading, error }: { data: any; isLoading: boolean; error: any } = useGetRecentQuery({});
-  console.log(recent, 'love me')
-  const [users] = useState<User[]>([
-    { id: 1, name: 'John Doe', email: 'john@example.com', status: 'active', joinDate: '2024-01-15' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'active', joinDate: '2024-02-01' },
-    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', status: 'inactive', joinDate: '2024-03-10' },
-  ]);
+  const { data: recent, isLoading, error } = useGetRecentQuery({});
+  const [orders, setOrders] = useState<Order[]>([]);
+  // const [users, setUsers] = useState<User[]>([]);
+  const { data: usersResponse, isLoading: isLoadingUser, error: errorUser } = useGetUsersQuery({});
+const [users, setUsers] = useState<User[]>([]);
 
-  const [orders] = useState<Order[]>([
-    { id: 1, customer: 'John Doe', amount: 299.99, status: 'completed', date: '2024-03-15' },
-    { id: 2, customer: 'Jane Smith', amount: 149.99, status: 'processing', date: '2024-03-20' },
-    { id: 3, customer: 'Mike Johnson', amount: 499.99, status: 'cancelled', date: '2024-03-22' },
-  ]);
+useEffect(() => {
+  if (usersResponse?.success && usersResponse.data) {
+    setUsers(usersResponse.data);
+  }
+}, [usersResponse]);
+
+
+  // Load data into state when fetched
+  useEffect(() => {
+    if (recent && recent.orders) {
+      setOrders(recent.orders);
+    }
+  }, [recent]);
+
+  // const [users] = useState<User[]>([
+  //   { id: 1, name: 'John Doe', email: 'john@example.com', status: 'active', joinDate: '2024-01-15' },
+  //   { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'active', joinDate: '2024-02-01' },
+  //   { id: 3, name: 'Mike Johnson', email: 'mike@example.com', status: 'inactive', joinDate: '2024-03-10' },
+  // ]);
+
+
+
 
   const [pendingItems] = useState<PendingItem[]>([
     { id: 1, type: 'approval', description: 'New vendor registration', priority: 'high' },
@@ -62,72 +85,116 @@ const AdminDashboard: React.FC = () => {
     return statusColors[status as keyof typeof statusColors];
   };
 
+  const getStatusUserBadge = (role: string) => {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return 'danger';
+      case 'client':
+        return 'primary';
+      default:
+        return 'secondary';
+    }
+  };
+
   return (
     <Container fluid className="admin-dashboard">
-      <Row className="dashboard-header">
-        <Col>
-          <h1>Admin Dashboard</h1>
-        </Col>
-      </Row>
-      
+     
+
       <Row className="mt-4">
-        <Col md={4} className="mb-4">
+
+
+
+
+
+
+     
+
+<Col md={4} className="mb-4">
           <Card className="dashboard-card">
             <Card.Header>
               <h5 className="mb-0">Recent Users</h5>
             </Card.Header>
             <Card.Body>
-              <Table hover responsive>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map(user => (
-                    <tr key={user.id}>
-                      <td>{user.name}</td>
-                      <td>
-                        <Badge bg={getStatusBadge(user.status)}>{user.status}</Badge>
-                      </td>
+              {/* {isLoadingUser && <p>Loading...</p>}
+              {errorUser && (
+                // <p className="text-danger">
+                //   Error loading orders: {'status' in errorUser ? Status ${errorUser.status} : errorUser.message || 'Unknown error'}
+                // </p>
+              )} */}
+
+              {!isLoadingUser && !errorUser && (
+                <Table hover responsive>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Role</th>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
+                  </thead>
+                  <tbody>
+                    {users.map((userItem: User) => (
+                      <tr key={userItem.username}>
+                        <td>{userItem.username}</td>
+                        <td>
+                          <Badge bg={getStatusUserBadge(userItem.role_name)}>
+                            {userItem.role_name}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
             </Card.Body>
           </Card>
         </Col>
 
+
+
         <Col md={4} className="mb-4">
-          <Card className="dashboard-card">
-            <Card.Header>
-              <h5 className="mb-0">Recent Orders</h5>
-            </Card.Header>
-            <Card.Body>
-              <Table hover responsive>
-                <thead>
-                  <tr>
-                    <th>Customer</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map(order => (
-                    <tr key={order.id}>
-                      <td>{order.customer}</td>
-                      <td>${order.amount}</td>
-                      <td>
-                        <Badge bg={getStatusBadge(order.status)}>{order.status}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
+  <Card className="dashboard-card">
+    <Card.Header>
+      <h5 className="mb-0">Recent Orders</h5>
+    </Card.Header>
+    <Card.Body>
+      {isLoading && <p>Loading...</p>}
+      {error && (
+        <p className="text-danger">
+          Error loading orders: {'status' in error ? `Status ${error.status}` : error.message || 'Unknown error'}
+        </p>
+      )}
+      {!isLoading && !error && (
+        <Table hover responsive>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Is Paid</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.id}>
+                <td>
+                  <Link to={`/admin/dashboard/${order.id}`} className="text-decoration-none">
+                    {order.username}
+                  </Link>
+                </td>
+                <td>${parseFloat(order.amount.toString()).toFixed(2)}</td>
+                <td>
+                  <Badge bg={getStatusBadge(order.status)}>{order.status}</Badge>
+                </td>
+                <td>
+                  {order.is_paid ? <Badge bg="success">Yes</Badge> : <Badge bg="danger">No</Badge>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+    </Card.Body>
+  </Card>
+</Col>
 
         <Col md={4} className="mb-4">
           <Card className="dashboard-card">

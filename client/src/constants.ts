@@ -8,3 +8,4 @@ export const PAYPAL_URL = '/api/order/config/paypal';
 
 //Admin
 export const ORDER_ADMIN_URL = '/api/admin/order/v3'
+export const ADMIN_USERS_URL = '/api/admin/v5'

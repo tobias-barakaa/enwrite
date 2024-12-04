@@ -20,6 +20,9 @@ import MyOrders from './dashboard/pages/manage/MyOrders';
 import { ToastContainer } from 'react-toastify';
 import LoginAdmin from './admin/pages/LoginAdmin';
 import AdminDashboard from './admin/pages/AdminDashboard';
+import OrderDetailsAdmin from './admin/pages/order/OrderDetailsAdmin';
+import Orders from './admin/pages/order/Orders';
+import AdminHeader from './admin/pages/AdminHeader';
 
 
 const router = createBrowserRouter([
@@ -116,16 +119,26 @@ const router = createBrowserRouter([
 },
 {
   path: 'admin/dashboard',
-  element: <AdminDashboard />,
+  element: <AdminHeader />,
   
   children: [
     {
       index: true,
       element: <AdminDashboard />
+    },
+    
+    {
+      path: ':id',
+      element: <OrderDetailsAdmin />
+    },
+    {
+      path: 'orders',
+      element: <Orders />
     }
     
   ]
-}
+},
+
 
 ])
 
