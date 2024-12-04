@@ -23,6 +23,7 @@ import AdminDashboard from './admin/pages/AdminDashboard';
 import OrderDetailsAdmin from './admin/pages/order/OrderDetailsAdmin';
 import Orders from './admin/pages/order/Orders';
 import AdminHeader from './admin/pages/AdminHeader';
+import HomeAdmin from './admin/pages/HomeAdmin';
 
 
 const router = createBrowserRouter([
@@ -124,7 +125,7 @@ const router = createBrowserRouter([
   children: [
     {
       index: true,
-      element: <AdminDashboard />
+      element: <HomeAdmin />
     },
     
     {

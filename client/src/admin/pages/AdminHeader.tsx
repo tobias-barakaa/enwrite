@@ -1,9 +1,14 @@
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { Navbar, Nav, Container } from "react-bootstrap";
+import "./AdminHeader.css"
+import Footer from "../../dashboard/components/Footer";
+
 
 const AdminHeader: React.FC = () => {
   return (
+    <>
+    <div className="homepage-admin">
 
     <Container fluid className="admin-dashboard">
 
@@ -37,6 +42,12 @@ const AdminHeader: React.FC = () => {
       </Container>
     </Navbar>
     </Container>
+
+    <Outlet />
+
+    </div>
+    <Footer />
+    </>
   );
 };
 
