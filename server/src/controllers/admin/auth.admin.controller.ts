@@ -6,6 +6,33 @@ import { generateToken } from "../../utils/generateToken";
 
 
 
+
+
+
+
+
+
+
+export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const users = await knex("users")
+        .join("roles", "users.role_id", "roles.id")
+        .select("users.username", "roles.role_name");
+  
+      res.status(200).json({
+        success: true,
+        message: "Users retrieved successfully",
+        data: users,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Error retrieving users.",
+      });
+    }
+  };
+  
+
 interface User {
     id: number;
     role_id: number;

@@ -18,7 +18,7 @@ router.get('/config/paypal', (req: Request, res: Response): void => {
     res.send({ clientId: process.env.PAYPAL_CLIENT_ID });
   });
 
-router.get('/v2/invoice/getall', protectUser, getUserInvoices)
+router.get('/v2/invoices', protectUser, getUserInvoices)
   
 
 export default router;

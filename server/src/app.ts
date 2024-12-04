@@ -8,6 +8,7 @@ import compression from 'compression';
 import userRoutes from './routes/auth.route';
 import orderRoutes from './routes/order.route';
 import adminRoute from './routes/admin/auth.admin.route';
+import orderRoute from './routes/admin/order.admin.route';
 
 dotenv.config();
 
@@ -56,5 +57,7 @@ app.get('/', (_req, res) => {
 app.use("/api", userRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/admin', adminRoute);
+app.use('/api/admin/order', orderRoute);
+
 
 export default app;

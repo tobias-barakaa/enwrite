@@ -32,7 +32,68 @@ interface User {
   }
 
 
+  // export const createUser = async (
+  //   req: Request<{}, {}, CreateUserRequest>,
+  //   res: Response
+  // ): Promise<void> => {
+  //   const { username, email, password } = req.body;
   
+  //   try {
+  //     // Sanitize input
+  //     const sanitizedUsername = username.trim().toLowerCase();
+  //     const sanitizedEmail = email.trim().toLowerCase();
+  
+  //     // Transaction for atomic operations
+  //     const newUser = await knex.transaction(async (trx) => {
+  //       // Check for existing email
+  //       const existingUser = await trx("users").where({ email: sanitizedEmail }).first();
+  //       if (existingUser) throw new Error("Email already exists");
+  
+  //       // Check for existing username
+  //       const existingUsername = await trx("users").where({ username: sanitizedUsername }).first();
+  //       if (existingUsername) throw new Error("Username already exists");
+  
+  //       // Hash password
+  //       const hashedPassword = await bcrypt.hash(password, 10);
+  
+  //       // Fetch client role
+  //       const clientRole = await trx("roles").where({ role_name: "admin" }).first();
+  //       if (!clientRole) throw new Error("Client role not found");
+      
+  //       // Insert user
+  //       const [insertedUser] = await trx("users")
+  //         .insert({
+  //           role_id: clientRole.id,
+  //           username: sanitizedUsername,
+  //           email: sanitizedEmail,
+  //           password: hashedPassword,
+  //           profile_pic: `https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png`,
+  //           balance: 0.0,
+  //           created_at: trx.fn.now(),
+  //         })
+  //         .returning(["id", "role_id", "username", "email", "profile_pic", "created_at"]);
+  
+  //       return insertedUser;
+  //     });
+  
+  //     // Generate JWT and set cookie
+  //     generateToken(res, newUser.id);
+  
+  //     // Respond with success
+  //     res.status(201).json({
+  //       success: true,
+  //       message: "User created successfully.",
+  //       data: { user: newUser },
+  //     });
+  //   } catch (error: any) {
+  //     // Error response
+  //     const statusCode = error.message === "Email already exists" || error.message === "Username already exists" ? 409 : 500;
+  //     res.status(statusCode).json({
+  //       success: false,
+  //       message: error.message || "Error creating user.",
+  //     });
+  //   }
+  // };
   
   
   export const createUser = async (
