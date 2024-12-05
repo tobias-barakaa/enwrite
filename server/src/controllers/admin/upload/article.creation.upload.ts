@@ -5,14 +5,41 @@ import knex from '../../../db/db';
 
 import { Request, Response } from 'express';
 
-export const uploadArticleFile = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { article_id, user_id } = req.body;
-      const uploaded_by = (req.user as any)?.userId;
+interface RequestUser {
+    userId: string;
+  }
   
-      // Validate the request parameters
-      if (!article_id || !user_id) {
-        res.status(400).json({ error: 'article_id and user_id are required' });
+  export const uploadArticleFile = async (req: Request, res: Response): Promise<void> => {
+    try {
+        console.log('everything here.:', req.body);
+      const { article_id, user_id } = req.body;
+      const uploaded_by = (req.user as unknown as RequestUser)?.userId;
+      console.log('uploaded by', uploaded_by);
+  
+      // Validate all required fields
+      if (!article_id || !user_id || !uploaded_by) {
+        res.status(400).json({ 
+          error: 'Missing required fields', 
+          details: {
+            article_id: !article_id ? 'Missing article_id' : null,
+            user_id: !user_id ? 'Missing user_id' : null,
+            uploaded_by: !uploaded_by ? 'User not authenticated' : null
+          }
+        });
+        return;
+      }
+  
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(article_id) || !uuidRegex.test(user_id) || !uuidRegex.test(uploaded_by)) {
+        res.status(400).json({ 
+          error: 'Invalid UUID format', 
+          details: {
+            article_id: !uuidRegex.test(article_id) ? 'Invalid article_id format' : null,
+            user_id: !uuidRegex.test(user_id) ? 'Invalid user_id format' : null,
+            uploaded_by: !uuidRegex.test(uploaded_by) ? 'Invalid uploaded_by format' : null
+          }
+        });
         return;
       }
   
@@ -22,16 +49,25 @@ export const uploadArticleFile = async (req: Request, res: Response): Promise<vo
         return;
       }
   
+      // Verify the file exists and has a path
+      if (!req.file.path) {
+        res.status(400).json({ error: 'Invalid file upload' });
+        return;
+      }
+  
       // Upload the file to Cloudinary
       const result = await cloudinary.uploader.upload(req.file.path);
-      const fileUrl = result.secure_url;
-      const publicId = result.public_id;
+      
+      if (!result || !result.secure_url || !result.public_id) {
+        res.status(500).json({ error: 'Failed to upload file to Cloudinary' });
+        return;
+      }
   
       // Insert the file record into the database
       const [fileRecord] = await knex('article_upload')
         .insert({
-          file_url: fileUrl,
-          public_id: publicId,
+          file_url: result.secure_url,
+          public_id: result.public_id,
           recipient_id: user_id,
           uploaded_by: uploaded_by,
           order_article_id: article_id,
@@ -39,14 +75,37 @@ export const uploadArticleFile = async (req: Request, res: Response): Promise<vo
         })
         .returning('*');
   
-      // Respond with the inserted record's ID and file URL
-      res.json({ id: fileRecord.id, fileUrl: fileRecord.file_url });
+      if (!fileRecord) {
+        res.status(500).json({ error: 'Failed to create database record' });
+        return;
+      }
+  
+      res.json({ 
+        id: fileRecord.id, 
+        fileUrl: fileRecord.file_url,
+        status: fileRecord.status
+      });
+  
     } catch (error) {
       console.error('Upload error:', error);
-      res.status(500).json({ error: 'Failed to upload file' });
+      
+      // Provide more specific error messages based on the error type
+      if (error instanceof Error) {
+        if (error.message.includes('foreign key constraint')) {
+          res.status(400).json({ 
+            error: 'Invalid reference', 
+            details: 'One or more IDs do not reference existing records' 
+          });
+          return;
+        }
+      }
+      
+      res.status(500).json({ 
+        error: 'Failed to upload file',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   };
-  
 
 
  

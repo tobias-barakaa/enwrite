@@ -78,4 +78,4 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     } catch (error) {
       res.status(401).json({ success: false, message: "Invalid token" });
     }
-  };
+  }; 

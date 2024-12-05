@@ -18,8 +18,7 @@ export async function up(knex: Knex): Promise<void> {
       .references("id")
       .inTable("users")
       .onDelete("CASCADE");
-      table
-      .uuid("uploaded_by")
+      table.uuid("uploaded_by")
       .notNullable()
       .references("id")
       .inTable("users")
