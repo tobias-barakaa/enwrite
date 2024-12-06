@@ -6,7 +6,7 @@ const HomeLayout: React.FC = () => {
   return (
     <div className="container">
       <Row className="align-items-center mb-3">
-        {["Dashboard", "Hire", "Manage", "Payments"].map((item, index) => (
+        {["Dashboard", "Hire", "Manage", "Payments", "Completed"].map((item, index) => (
           <Col key={index} xs="auto" className="nav-item">
             <Link
               to={`/dashboard/${item.toLowerCase() === "dashboard" ? "" : item.toLowerCase()}`}

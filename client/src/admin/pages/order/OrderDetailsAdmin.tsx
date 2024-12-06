@@ -4,39 +4,13 @@ import { Upload } from 'lucide-react';
 import { useGetOrderByIdQuery, useUploadArticleFileMutation } from '../../../slices/admin/adminOrderApiSlice';
 import { useParams } from 'react-router-dom';
 
-interface OrderData {
-  order_id: string;
-  title: string;
-  description: string;
-  keywords: string;
-  word_count: string;
-  duration: string;
-  complexity: string;
-  language: string;
-  quantity: number;
-  cost: string;
-  status: string;
-  is_paid: boolean;
-  user_id: string;
-  username: string;
-  email: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ApiResponse {
-  success: boolean;
-  message: string;
-  data: OrderData;
-}
 
 const OrderDetailsAdmin: React.FC = () => {
   const { id } = useParams();
   const { data: response } = useGetOrderByIdQuery(id);
-  const [ status, setStatus ] = useState("")
   const order = response?.data;
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>(order?.status || 'Pending');
 
   const [uploadArticleFile] = useUploadArticleFileMutation();
@@ -58,69 +32,63 @@ const OrderDetailsAdmin: React.FC = () => {
     }
   };
 
-//   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//     if (event.target.files && event.target.files[0]) {
-//       setSelectedFile(event.target.files[0]);
-//     }
-//   };
 
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile && (selectedFile.type === 'application/pdf' || selectedFile.type === 'text/csv')) {
-      setSelectedFile(selectedFile);
-    } else {
-      alert('Please upload only PDF or CSV files.');
-      e.target.value = null;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      console.log('Selected File:', selectedFile); 
     }
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    // Handle your submit logic here
-    console.log('Status:', selectedStatus);
-    console.log('File:', selectedFile);
+  
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatus(e.target.value);
   };
 
-
-
-
-
+  const handleUpdateStatus = () => {
+    console.log('Status updated:', selectedStatus);
+  };
 
 
 
 
 
   const handleSend = async () => {
-    if (!selectedFile) {
+    if (!file) {
       alert('Please choose a file to upload.');
       return;
     }
-
-    if (!status) {
+  
+    if (!selectedStatus) {
       alert('Please select a status before uploading.');
       return;
     }
-
-    // Prepare the payload for the mutation
+  
     const payload = {
-      article_id: order.id,
+      article_id: order.order_id,
       user_id: order.user_id,
-      selectedFile,
-      status, // Include status in the payload
+      file,
+      status: selectedStatus,
     };
-
+  
+    console.log('Payload:', payload); // Debug log
+  
     try {
-      // Call the mutation and handle response
       const result = await uploadArticleFile(payload).unwrap();
+      console.log('Upload Result:', result); // Debug log
       alert('File uploaded successfully!');
-      console.log('Response:', result);
+      setFile(null);
     } catch (error) {
       console.error('Error sending file:', error);
       alert('An error occurred while uploading the file.');
     }
   };
-
+  
+  
+  
 
 
 
@@ -201,13 +169,14 @@ const OrderDetailsAdmin: React.FC = () => {
               <h4 className="mb-0">Update Order</h4>
             </Card.Header>
             <Card.Body>
-              <Form onSubmit={handleSubmit}>
+              <Form>
                 <Form.Group className="mb-4">
                   <Form.Label>Update Status</Form.Label>
                   <Form.Select 
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    
                     className="mb-3"
+
+                    id="status-select" value={selectedStatus} onChange={handleStatusChange}
                   >
                     <option value="Pending">Pending</option>
                     <option value="In Progress">In Progress</option>
@@ -218,27 +187,25 @@ const OrderDetailsAdmin: React.FC = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-4">
-                  <Form.Label>Upload Deliverable</Form.Label>
-                  <div className="d-grid">
-                    <Button 
-                      variant="outline-primary" 
-                      className="position-relative"
-                      onClick={() => document.getElementById('fileInput')?.click()}
-                    >
-                      <Upload size={18} className="me-2" />
-                      {selectedFile ? selectedFile.name : 'Choose File'}
-                      <input
-                        id="fileInput"
-                        type="file"
-                        className="position-absolute top-0 start-0 opacity-0 invisible"
-                        onChange={handleFileChange}
-                      />
-                    </Button>
-                  </div>
-                </Form.Group>
+  <Form.Label>Upload Deliverable</Form.Label>
+  <div className="d-grid">
+    <label className="btn btn-outline-primary">
+      <Upload size={18} className="me-2" />
+      {file ? file.name : 'Choose File'}
+      <input 
+        type="file" 
+        className="d-none" 
+        accept=".pdf,.csv" 
+        onChange={handleFileChange} 
+      />
+    </label>
+  </div>
+</Form.Group>
 
                 <div className="d-grid">
-                  <Button type="submit" variant="primary" onClick={handleSend}>
+          <Button className='button-update' variant='secondary' onClick={handleUpdateStatus}>Update Status</Button>
+
+                  <Button variant="primary" onClick={handleSend} style={{ marginTop: "10px" }}>
                     Update Order
                   </Button>
                 </div>

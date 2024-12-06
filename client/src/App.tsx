@@ -19,11 +19,11 @@ import WorkRoom from './dashboard/pages/manage/WorkRoom';
 import MyOrders from './dashboard/pages/manage/MyOrders';
 import { ToastContainer } from 'react-toastify';
 import LoginAdmin from './admin/pages/LoginAdmin';
-import AdminDashboard from './admin/pages/AdminDashboard';
 import OrderDetailsAdmin from './admin/pages/order/OrderDetailsAdmin';
 import Orders from './admin/pages/order/Orders';
 import AdminHeader from './admin/pages/AdminHeader';
 import HomeAdmin from './admin/pages/HomeAdmin';
+import Completed from './dashboard/pages/completed/Completed';
 
 
 const router = createBrowserRouter([
@@ -108,6 +108,10 @@ const router = createBrowserRouter([
         {
         }
       ]
+    },
+    {
+      path: "Completed",
+      element: <Completed />
     }
    
     
