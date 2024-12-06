@@ -1,88 +1,130 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Card, Dropdown, Spinner } from 'react-bootstrap';
-import { format } from 'date-fns';
-import { useGetCompletedOrdersQuery } from '../../../slices/admin/adminOrderApiSlice';
-import pdfParse from 'pdf-parse';
+import React, { useState } from "react";
+import { format } from "date-fns";
+import {
+  useGetCompletedOrdersQuery} from "../../../slices/admin/adminOrderApiSlice";
+import styled from "styled-components";
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  Container,
+  Spinner,
+  Dropdown,
+  Badge,
+} from "react-bootstrap";
 
-interface OrderArticle {
-  file_id: string;
-  file_url: string;
-  public_id: string;
-  recipient_id: string;
-  uploaded_by: string;
-  order_article_id: string;
-  created_at: string;
+
+interface Props {
+  fileUrl: string;
+  fileName?: string;
+}
+
+interface PdfContent {
   title: string;
-  description: string;
-  keywords: string;
-  complexity: string;
-  word_count: string;
-  duration: string;
-  quantity: number;
-  language: string;
-  cost: string;
-  status: string;
-  article_created_at: string;
-  article_updated_at: string;
+  fileUrl: string;
+  content: string;
 }
 
 interface Props {
-  fileUrl: string; // Pass `file_url` as a prop to this component
-  fileName?: string; // Optional file name
+  pdfContent: PdfContent[];
+  isLoading: boolean;
+  isError: boolean;
 }
 
-
 const Completed: React.FC<Props> = ({ fileUrl, fileName }) => {
-  const [feedback, setFeedback] = useState<string>('');
-  const [satisfaction, setSatisfaction] = useState<string>('Select Satisfaction');
+  const [satisfaction, setSatisfaction] = useState<string>(
+    "Select Satisfaction"
+  );
   const { data: response, isLoading, isError } = useGetCompletedOrdersQuery({});
- 
-  const [textPdf, setTextPdf] = useState('');
-const [set] = useState(true);
-  
 
-  
+  const StyledCard = styled(Card)`
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  `;
 
-  
+  const StyledCardHeader = styled(Card.Header)`
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+  `;
+
+  const StyledButton = styled(Button)`
+    height: 50px;
+    background-color: ${(props) => {
+      if (props.variant === "outline-danger") return "white";
+      if (props.variant === "outline-check") return "white";
+      return "#f5f5f5";
+    }};
+    border: 1px solid
+      ${(props) => {
+        if (props.variant === "outline-danger") return "#dc3545";
+        if (props.variant === "outline-check") return "#666";
+        return "#e0e0e0";
+      }};
+    color: ${(props) => {
+      if (props.variant === "outline-danger") return "#dc3545";
+      if (props.variant === "outline-check") return "#666";
+      return "#333";
+    }};
+
+    &:hover {
+      background-color: ${(props) => {
+        if (props.variant === "outline-danger") return "#dc3545";
+        if (props.variant === "outline-check") return "#666";
+        return "#e0e0e0";
+      }};
+      color: ${(props) => {
+        if (props.variant === "outline-danger") return "white";
+        if (props.variant === "outline-check") return "white";
+        return "#333";
+      }};
+    }
+  `;
+
+  const StyledDropdownToggle = styled(Dropdown.Toggle)`
+    height: 50px;
+    background-color: white !important;
+    border: 1px solid #666 !important;
+    color: #333 !important;
+
+    &:hover {
+      background-color: #666 !important;
+      color: white !important;
+    }
+  `;
 
   const downloadPDF = async () => {
     try {
       const letme = fileUrl || response?.data?.[0]?.file_url;
-      if (!letme) throw new Error('Failed to fetch the PDF');
-  
+      if (!letme) throw new Error("Failed to fetch the PDF");
+
       // Renamed to fetchResponse to avoid conflict
       const fetchResponse = await fetch(letme);
       const blob = await fetchResponse.blob();
-      
+
       const urlObject = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = urlObject;
-      link.download = fileName || 'document.pdf';
-      
+      link.download = fileName || "document.pdf";
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       URL.revokeObjectURL(urlObject);
     } catch (error) {
-      console.error('Error downloading PDF:', error);
+      console.error("Error downloading PDF:", error);
     }
   };
 
 
-  const handleDelete = (orderId: string) => {
-    // Implement delete functionality
-    console.log('Deleting order:', orderId);
-  };
-
-  const handleAICheck = (orderId: string) => {
-    // Implement AI check functionality
-    console.log('Checking AI for order:', orderId);
-  };
-
   if (isLoading) {
     return (
-      <Container className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
+      <Container
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "400px" }}
+      >
         <Spinner animation="border" variant="primary" />
       </Container>
     );
@@ -97,160 +139,228 @@ const [set] = useState(true);
   }
 
   return (
-    <Container fluid className="py-4">
+    <Container className="py-4">
       <Row>
-        {response?.data.map((order) => (
+        {response?.data.map((order: { file_id: string; status: string; title: string; created_at: string; description: string; word_count: number; duration: string; cost: number; language: string; complexity: string; file_url: string; pdfContent: string; }) => (
           <Row key={order.file_id} className="mb-4">
-            <Col md={7}>
-              <Card className="h-100 shadow-sm">
-                <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-                  <h5 className="mb-0">Order Details</h5>
-                  <span className={`badge bg-${order.status.toLowerCase() === 'pending' ? 'warning' : 'success'}`}>
+            <Col md={7} className="mx-auto">
+              <Card
+                className="border-0"
+                style={{
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                <Card.Header
+                  className="d-flex justify-content-between align-items-center py-3"
+                  style={{
+                    background: "#2c3e50",
+                    borderBottom: "none",
+                  }}
+                >
+                  <h5 className="mb-0 text-white">Order Details</h5>
+                  <Badge
+                    bg={
+                      order.status.toLowerCase() === "pending"
+                        ? "warning"
+                        : "success"
+                    }
+                    style={{ padding: "8px 12px", borderRadius: "20px" }}
+                  >
                     {order.status}
-                  </span>
+                  </Badge>
                 </Card.Header>
-                <Card.Body>
-                  <Row className="mb-3">
+
+                <Card.Body className="p-4">
+                  <Row className="mb-4">
                     <Col md={6}>
-                      <h6 className="text-primary">Title</h6>
-                      <p>{order.title}</p>
+                      <h6
+                        className="text-muted mb-2"
+                        style={{ fontSize: "0.9rem" }}
+                      >
+                        Title
+                      </h6>
+                      <p className="mb-0" style={{ color: "#2c3e50" }}>
+                        {order.title}
+                      </p>
                     </Col>
                     <Col md={6}>
-                      <h6 className="text-primary">Created At</h6>
-                      <p>{format(new Date(order.created_at), 'PPP')}</p>
+                      <h6
+                        className="text-muted mb-2"
+                        style={{ fontSize: "0.9rem" }}
+                      >
+                        Created At
+                      </h6>
+                      <p className="mb-0" style={{ color: "#2c3e50" }}>
+                        {format(new Date(order.created_at), "PPP")}
+                      </p>
                     </Col>
                   </Row>
-                  
-                  <Row className="mb-3">
+
+                  <Row className="mb-4">
                     <Col>
-                      <h6 className="text-primary">Description</h6>
-                      <p>{order.description}</p>
+                      <h6
+                        className="text-muted mb-2"
+                        style={{ fontSize: "0.9rem" }}
+                      >
+                        Description
+                      </h6>
+                      <p className="mb-0" style={{ color: "#2c3e50" }}>
+                        {order.description}
+                      </p>
                     </Col>
                   </Row>
 
-                  <Row className="mb-3">
-                    <Col md={4}>
-                      <h6 className="text-primary">Word Count</h6>
-                      <p>{order.word_count}</p>
-                    </Col>
-                    <Col md={4}>
-                      <h6 className="text-primary">Duration</h6>
-                      <p>{order.duration}</p>
-                    </Col>
-                    <Col md={4}>
-                      <h6 className="text-primary">Cost</h6>
-                      <p>${order.cost}</p>
-                    </Col>
+                  <Row className="mb-4">
+                    {[
+                      { label: "Word Count", value: order.word_count },
+                      { label: "Duration", value: order.duration },
+                      { label: "Cost", value: `$${order.cost}` },
+                    ].map((item, index) => (
+                      <Col md={4} key={index}>
+                        <div
+                          className="p-3 rounded"
+                          style={{
+                            backgroundColor: "#f8f9fa",
+                            border: "1px solid #eee",
+                          }}
+                        >
+                          <h6
+                            className="text-muted mb-2"
+                            style={{ fontSize: "0.9rem" }}
+                          >
+                            {item.label}
+                          </h6>
+                          <p
+                            className="mb-0 fw-semibold"
+                            style={{ color: "#2c3e50" }}
+                          >
+                            {item.value}
+                          </p>
+                        </div>
+                      </Col>
+                    ))}
                   </Row>
 
-                  <Row>
-                    <Col md={6}>
-                      <h6 className="text-primary">Language</h6>
-                      <p>{order.language}</p>
-                    </Col>
-                    <Col md={6}>
-                      <h6 className="text-primary">Complexity</h6>
-                      <p>{order.complexity}</p>
-                    </Col>
+                  <Row className="mb-4">
+                    {[
+                      { label: "Language", value: order.language },
+                      { label: "Complexity", value: order.complexity },
+                    ].map((item, index) => (
+                      <Col md={6} key={index}>
+                        <div
+                          className="p-3 rounded"
+                          style={{
+                            backgroundColor: "#f8f9fa",
+                            border: "1px solid #eee",
+                          }}
+                        >
+                          <h6
+                            className="text-muted mb-2"
+                            style={{ fontSize: "0.9rem" }}
+                          >
+                            {item.label}
+                          </h6>
+                          <p
+                            className="mb-0 fw-semibold"
+                            style={{ color: "#2c3e50" }}
+                          >
+                            {item.value}
+                          </p>
+                        </div>
+                      </Col>
+                    ))}
                   </Row>
 
-                  <div className="mt-3">
-                    <Button 
-                      variant="outline-primary" 
-                      href={order.file_url} 
-                      target="_blank" 
-                      className="w-100"
-                    >
-                      View Delivered File
-                    </Button>
-                  </div>
+                  <Button
+                    variant="dark"
+                    href={order.file_url}
+                    target="_blank"
+                    className="w-100 mt-3"
+                    style={{
+                      backgroundColor: "#2c3e50",
+                      border: "none",
+                      padding: "12px",
+                      transition: "background-color 0.2s ease",
+                    }}
+                  >
+                    View Delivered File
+                  </Button>
                 </Card.Body>
               </Card>
             </Col>
 
-
-
-
-
-
-
-
-            <h1>Completed</h1>
-      <Button onClick={downloadPDF} variant="primary">
-        {fileName}
-      </Button>
-
-
-
-
-
-
-
-
-
-
-
-
-
+          
 
             <Col md={5}>
-              <Card className="h-100 shadow-sm">
-                <Card.Header className="bg-primary text-white">
+              <StyledCard className="h-100">
+                <StyledCardHeader>
                   <h5 className="mb-0">Feedback</h5>
-                </Card.Header>
+                </StyledCardHeader>
                 <Card.Body className="d-flex flex-column">
-                  <Form.Control
-                    as="textarea"
-                    placeholder="Enter your feedback here..."
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    className="mb-3 flex-grow-1"
-                    style={{ 
-                      height: '300px', 
-                      resize: 'none',
-                      backgroundColor: '#f8f9fa'
-                    }}
+                  <textarea
+                    value={order.pdfContent}
+                    readOnly
+                    className="w-full min-h-[500px] p-4 rounded-lg border border-gray-200 focus:outline-none"
+                    style={{ height: "280px", width: "420px" }}
                   />
-                  
-                  <div className="d-flex gap-2">
-                    <Dropdown className="flex-grow-1">
-                      <Dropdown.Toggle 
-                        variant="outline-primary" 
-                        className="w-100"
-                        style={{ height: '50px' }}
+
+                  <div
+                    className="d-flex flex-column gap-2"
+                    style={{ marginTop: "49px" }}
+                  >
+                    <StyledButton
+                      variant="outline-secondary"
+                      className="w-100"
+                      onClick={downloadPDF}
+                    >
+                      Download All
+                    </StyledButton>
+
+                    <div className="d-flex gap-2">
+                      <Dropdown className="flex-grow-1">
+                        <StyledDropdownToggle className="w-100">
+                          {satisfaction}
+                        </StyledDropdownToggle>
+                        <Dropdown.Menu className="w-100">
+                          <Dropdown.Item
+                            onClick={() => setSatisfaction("Satisfied")}
+                          >
+                            Satisfied
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => setSatisfaction("Not Satisfied")}
+                          >
+                            Not Satisfied
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+
+                      <StyledButton
+                        variant="outline-danger"
+                        className="flex-grow-1"
                       >
-                        {satisfaction}
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu className="w-100">
-                        <Dropdown.Item onClick={() => setSatisfaction('Satisfied')}>
-                          Satisfied
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={() => setSatisfaction('Not Satisfied')}>
-                          Not Satisfied
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
+                        Delete
+                      </StyledButton>
 
-                    <Button 
-                      variant="outline-danger" 
-                      className="flex-grow-1"
-                      style={{ height: '50px' }}
-                      onClick={() => handleDelete(order.file_id)}
-                    >
-                      Delete
-                    </Button>
+                      <StyledButton
+                        variant="outline-check"
+                        className="flex-grow-1"
+                        onClick={() =>
+                          (window.location.href =
+                            "https://alexawriters.com/aichecker")
+                        }
+                      >
+                        Check AI
+                      </StyledButton>
+                    </div>
 
-                    <Button 
-                      variant="outline-info" 
-                      className="flex-grow-1"
-                      style={{ height: '50px' }}
-                      onClick={() => handleAICheck(order.file_id)}
-                    >
-                      Check AI
-                    </Button>
+                    <StyledButton variant="outline-secondary" className="w-100">
+                      Send Satisfaction
+                    </StyledButton>
                   </div>
                 </Card.Body>
-              </Card>
+              </StyledCard>
             </Col>
           </Row>
         ))}

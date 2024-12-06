@@ -53,10 +53,17 @@ const ordersAdminApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 5,
       
     }),
+    getPdfContent: builder.query({
+      query:() => ({
+        url: `${UPLOAD_URL}/contentpdf`,
+        credentials: 'include',
+      }),
+      keepUnusedDataFor: 5,
+    })
 
-      
+    
   }),
 });
 
-export const { useGetRecentQuery, useGetUsersQuery, useGetOrderByIdQuery, useUploadArticleFileMutation, useGetCompletedOrdersQuery } = ordersAdminApiSlice;
+export const { useGetRecentQuery, useGetUsersQuery, useGetOrderByIdQuery, useUploadArticleFileMutation, useGetCompletedOrdersQuery, useGetPdfContentQuery } = ordersAdminApiSlice;
 export { ordersAdminApiSlice };
