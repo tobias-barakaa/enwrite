@@ -19,7 +19,7 @@ export const protectAdmin = async (req: Request, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, process.env.ACCESS_SECRET) as jwt.JwtPayload;
     console.log(decoded, "Decoded Token");
 
-    if (!decoded.id) {
+    if (!decoded.userId) {
       res.status(401).json({ message: "Unauthorized: Invalid token payload" });
       return;
     }
@@ -28,10 +28,10 @@ export const protectAdmin = async (req: Request, res: Response, next: NextFuncti
     const user = await knex("users")
       .join("roles", "users.role_id", "roles.id")
       .select("users.id", "users.username", "users.email", "roles.role_name")
-      .where("users.id", decoded.id)
+      .where("users.id", decoded.userId)
       .first();
 
-    console.log(user, "Fetched User");
+    // console.log(user, "Fetched User");
 
     if (!user) {
       res.status(401).json({ message: "Unauthorized: User not found" });
@@ -49,7 +49,7 @@ export const protectAdmin = async (req: Request, res: Response, next: NextFuncti
     next();
   } catch (error) {
     console.error("Error in protectAdmin middleware:", error);
-    res.status(401).json({ message: "Unauthorized: Invalid token" });
+    res.status(401).json({ message: "Unauthorized: Invalid tokenn" });
   }
 };
 
@@ -57,25 +57,31 @@ export const protectAdmin = async (req: Request, res: Response, next: NextFuncti
 
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const token = req.cookies.jwt;
-    console.log(token, 'how invalid token')
-  
-    if (!token) {
-      res.status(401).json({ success: false, message: "Unauthorized" });
+  const token = req.cookies.jwt;
+  console.log(token, 'how invalid token')
+
+  if (!token) {
+    res.status(401).json({ success: false, message: "Unauthorized" });
+    return;
+  }
+
+  try {
+    // Define the decoded token type correctly, including userId
+    const decoded = jwt.verify(token, process.env.ACCESS_SECRET as string) as { userId: number };
+
+    console.log(decoded, 'decoded');
+    // Use decoded.userId instead of decoded.id
+    const user = await knex("users").where("id", decoded.userId).first();
+    
+    if (!user) {
+      res.status(401).json({ success: false, message: "Unauthorized: User not found" });
       return;
     }
-  
-    try {
-      const decoded = jwt.verify(token, process.env.ACCESS_SECRET as string) as { id: number };
-      const user = await knex("users").where("id", decoded.id).first();
-      
-      if (!user) {
-        res.status(401).json({ success: false, message: "Unauthorized: User not found" });
-      }
-      
-      req.user = user; // Attach user to request object
-      next(); // Pass control to the next middleware
-    } catch (error) {
-      res.status(401).json({ success: false, message: "Invalid token" });
-    }
-  }; 
+    
+    req.user = user; // Attach user to request object
+    next(); // Pass control to the next middleware
+  } catch (error) {
+    res.status(401).json({ success: false, message: "Invalid token" });
+  }
+};
+

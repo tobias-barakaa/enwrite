@@ -1,6 +1,8 @@
 // controllers/articleUploadController.js
 import cloudinary from '../../../utils/cloudinary';
 import knex from '../../../db/db';
+import PDFParser from 'pdf-parse';
+import axios from 'axios';
 
 
 import { Request, Response } from 'express';
@@ -182,3 +184,74 @@ export const getUploadedArticles = async (req: Request, res: Response): Promise<
     }
   };
 
+
+
+
+  export const getPDFContent = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const recipient_id = req.user?.id;
+  
+      if (!recipient_id) {
+        res.status(400).json({
+          status: 400,
+          error: 'Bad Request',
+          message: 'User ID is required. Please ensure you are logged in.',
+          type: 'Client Error',
+        });
+        return;
+      }
+  
+      // Get the article details from the database
+      const articles = await knex('article_upload')
+        .join('order_article', 'article_upload.order_article_id', 'order_article.id')
+        .where({
+          'article_upload.recipient_id': recipient_id
+        })
+        .select('article_upload.file_url', 'order_article.title');
+  
+      if (!articles.length) {
+        res.status(404).json({
+          status: 404,
+          error: 'Not Found',
+          message: 'No articles found for this user.',
+          type: 'Client Error',
+        });
+        return;
+      }
+  
+      // Initialize an array to hold the PDF contents
+      const pdfContents = [];
+  
+      // Loop through the articles and fetch the PDF content for each
+      for (const article of articles) {
+        const response = await axios.get(article.file_url, {
+          responseType: 'arraybuffer'
+        });
+  
+        const data = await PDFParser(response.data);
+        pdfContents.push({
+          title: article.title,
+          content: data.text,
+          fileUrl: article.file_url
+        });
+      }
+  
+      res.status(200).json({
+        status: 200,
+        data: pdfContents,
+        message: 'PDF content extracted successfully',
+        type: 'Success',
+      });
+  
+    } catch (error) {
+      console.error('Error extracting PDF content:', error);
+      res.status(500).json({
+        status: 500,
+        error: 'Internal Server Error',
+        message: 'Failed to extract PDF content',
+        type: 'Server Error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  };
+  

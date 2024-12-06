@@ -29,6 +29,7 @@ interface User {
     balance: number;
     created_at?: Date;
     clientRole?: string;
+    
   }
 
 
