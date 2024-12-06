@@ -29,3 +29,37 @@ export interface OrderArticleRequestBody {
     error: any; 
 
   }
+
+
+
+
+ export interface RequestUser {
+    userId: string;
+    role: string;
+  }
+  
+export  interface UploadedArticle {
+    file_id: string;
+    file_url: string;
+    public_id: string;
+    recipient_id: string;
+    uploaded_by: string;
+    article_id: string;
+    created_at: Date;
+    title: string;
+    description: string;
+    keywords: string[];
+    complexity: string;
+    word_count: number;
+    duration: string;
+    quantity: number;
+    language: string;
+    cost: number;
+    status: string;
+    article_created_at: Date;
+    article_updated_at: Date;
+  }
+
+  export interface AuthenticatedRequest extends Request {
+    user?: RequestUser;
+  }
