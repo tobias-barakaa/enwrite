@@ -117,141 +117,231 @@ interface RequestUser {
 
 
 
-export const getUploadedArticles = async (req: Request, res: Response): Promise<void> => {    
-    try {
-      const recipient_id = req.user?.id;
+// export const getUploadedArticles = async (req: Request, res: Response): Promise<void> => {    
+//     try {
+//       const recipient_id = req.user?.id;
   
-      if (!recipient_id) {
-        res.status(400).json({
-          status: 400,
-          error: 'Bad Request',
-          message: 'User ID is required. Please ensure you are logged in and try again.',
-          type: 'Client Error',
-        });
-      }
+//       if (!recipient_id) {
+//         res.status(400).json({
+//           status: 400,
+//           error: 'Bad Request',
+//           message: 'User ID is required. Please ensure you are logged in and try again.',
+//           type: 'Client Error',
+//         });
+//       }
   
-      const query = knex<UploadedArticle>('article_upload')
-        .where('article_upload.recipient_id', recipient_id)
-        .join('order_article', 'article_upload.order_article_id', 'order_article.id')
-        .select({
-          file_id: 'article_upload.id',
-          file_url: 'article_upload.file_url',
-          public_id: 'article_upload.public_id',
-          recipient_id: 'article_upload.recipient_id',
-          uploaded_by: 'article_upload.uploaded_by',
-          order_article_id: 'article_upload.order_article_id',
-          created_at: 'article_upload.created_at',
-          title: 'order_article.title',
-          description: 'order_article.description',
-          keywords: 'order_article.keywords',
-          complexity: 'order_article.complexity',
-          word_count: 'order_article.word_count',
-          duration: 'order_article.duration',
-          quantity: 'order_article.quantity',
-          language: 'order_article.language',
-          cost: 'order_article.cost',
-          status: 'order_article.status',
-          article_created_at: 'order_article.created_at',
-          article_updated_at: 'order_article.updated_at',
-        });
-      const files = await query;
+//       const query = knex<UploadedArticle>('article_upload')
+//         .where('article_upload.recipient_id', recipient_id)
+//         .join('order_article', 'article_upload.order_article_id', 'order_article.id')
+//         .select({
+//           file_id: 'article_upload.id',
+//           file_url: 'article_upload.file_url',
+//           public_id: 'article_upload.public_id',
+//           recipient_id: 'article_upload.recipient_id',
+//           uploaded_by: 'article_upload.uploaded_by',
+//           order_article_id: 'article_upload.order_article_id',
+//           created_at: 'article_upload.created_at',
+//           title: 'order_article.title',
+//           description: 'order_article.description',
+//           keywords: 'order_article.keywords',
+//           complexity: 'order_article.complexity',
+//           word_count: 'order_article.word_count',
+//           duration: 'order_article.duration',
+//           quantity: 'order_article.quantity',
+//           language: 'order_article.language',
+//           cost: 'order_article.cost',
+//           status: 'order_article.status',
+//           article_created_at: 'order_article.created_at',
+//           article_updated_at: 'order_article.updated_at',
+//         });
+//       const files = await query;
   
-      if (files.length === 0) {
-        res.status(404).json({
-          status: 404,
-          error: 'Not Found',
-          message: 'No files found for the specified user.',
-          type: 'Client Error',
-        });
-      }
+//       if (files.length === 0) {
+//         res.status(404).json({
+//           status: 404,
+//           error: 'Not Found',
+//           message: 'No files found for the specified user.',
+//           type: 'Client Error',
+//         });
+//       }
   
-      res.status(200).json({
-        status: 200,
-        data: files,
-        message: 'Files retrieved successfully',
-        type: 'Success',
+//       res.status(200).json({
+//         status: 200,
+//         data: files,
+//         message: 'Files retrieved successfully',
+//         type: 'Success',
+//       });
+//     } catch (error) {
+//       console.error('Error fetching uploaded files:', error);
+  
+//       res.status(500).json({
+//         status: 500,
+//         error: 'Internal Server Error',
+//         message: 'An unexpected error occurred while fetching the uploaded files. Please try again later.',
+//         type: 'Server Error',
+//         details: error instanceof Error ? error.message : 'Unknown error',
+//       });
+//     }
+//   };
+
+
+export const getUploadedArticles = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const recipient_id = req.user?.id;
+
+    if (!recipient_id) {
+      res.status(400).json({
+        status: 400,
+        error: 'Bad Request',
+        message: 'User ID is required. Please ensure you are logged in and try again.',
+        type: 'Client Error',
       });
-    } catch (error) {
-      console.error('Error fetching uploaded files:', error);
-  
-      res.status(500).json({
-        status: 500,
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred while fetching the uploaded files. Please try again later.',
-        type: 'Server Error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      });
+      return;
     }
-  };
 
-
-
-
-  export const getPDFContent = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const recipient_id = req.user?.id;
-  
-      if (!recipient_id) {
-        res.status(400).json({
-          status: 400,
-          error: 'Bad Request',
-          message: 'User ID is required. Please ensure you are logged in.',
-          type: 'Client Error',
-        });
-        return;
-      }
-  
-      // Get the article details from the database
-      const articles = await knex('article_upload')
-        .join('order_article', 'article_upload.order_article_id', 'order_article.id')
-        .where({
-          'article_upload.recipient_id': recipient_id
-        })
-        .select('article_upload.file_url', 'order_article.title');
-  
-      if (!articles.length) {
-        res.status(404).json({
-          status: 404,
-          error: 'Not Found',
-          message: 'No articles found for this user.',
-          type: 'Client Error',
-        });
-        return;
-      }
-  
-      // Initialize an array to hold the PDF contents
-      const pdfContents = [];
-  
-      // Loop through the articles and fetch the PDF content for each
-      for (const article of articles) {
-        const response = await axios.get(article.file_url, {
-          responseType: 'arraybuffer'
-        });
-  
-        const data = await PDFParser(response.data);
-        pdfContents.push({
-          title: article.title,
-          content: data.text,
-          fileUrl: article.file_url
-        });
-      }
-  
-      res.status(200).json({
-        status: 200,
-        data: pdfContents,
-        message: 'PDF content extracted successfully',
-        type: 'Success',
+    const query = knex<UploadedArticle>('article_upload')
+      .where('article_upload.recipient_id', recipient_id)
+      .join('order_article', 'article_upload.order_article_id', 'order_article.id')
+      .select({
+        file_id: 'article_upload.id',
+        file_url: 'article_upload.file_url',
+        public_id: 'article_upload.public_id',
+        recipient_id: 'article_upload.recipient_id',
+        uploaded_by: 'article_upload.uploaded_by',
+        order_article_id: 'article_upload.order_article_id',
+        created_at: 'article_upload.created_at',
+        title: 'order_article.title',
+        description: 'order_article.description',
+        keywords: 'order_article.keywords',
+        complexity: 'order_article.complexity',
+        word_count: 'order_article.word_count',
+        duration: 'order_article.duration',
+        quantity: 'order_article.quantity',
+        language: 'order_article.language',
+        cost: 'order_article.cost',
+        status: 'order_article.status',
+        article_created_at: 'order_article.created_at',
+        article_updated_at: 'order_article.updated_at',
       });
-  
-    } catch (error) {
-      console.error('Error extracting PDF content:', error);
-      res.status(500).json({
-        status: 500,
-        error: 'Internal Server Error',
-        message: 'Failed to extract PDF content',
-        type: 'Server Error',
-        details: error instanceof Error ? error.message : 'Unknown error',
+
+    const files = await query;
+
+    if (files.length === 0) {
+      res.status(404).json({
+        status: 404,
+        error: 'Not Found',
+        message: 'No files found for the specified user.',
+        type: 'Client Error',
       });
+      return;
     }
-  };
+
+    // Extract PDF content for each file
+    const filesWithPdfContent = await Promise.all(
+      files.map(async (file) => {
+        try {
+          const response = await axios.get(file.file_url, { responseType: 'arraybuffer' });
+          const pdfData = await PDFParser(response.data);
+          return {
+            ...file,
+            pdfContent: pdfData.text, // Add extracted text to the file object
+          };
+        } catch (error) {
+          console.error(`Error extracting PDF content for file ${file.file_id}:`, error);
+          return {
+            ...file,
+            pdfContent: null, // Set null if PDF parsing fails
+          };
+        }
+      })
+    );
+
+    res.status(200).json({
+      status: 200,
+      data: filesWithPdfContent,
+      message: 'Files and PDF content retrieved successfully',
+      type: 'Success',
+    });
+  } catch (error) {
+    console.error('Error fetching uploaded files:', error);
+
+    res.status(500).json({
+      status: 500,
+      error: 'Internal Server Error',
+      message: 'An unexpected error occurred while fetching the uploaded files. Please try again later.',
+      type: 'Server Error',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+
+
+  // export const getPDFContent = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     const recipient_id = req.user?.id;
+  
+  //     if (!recipient_id) {
+  //       res.status(400).json({
+  //         status: 400,
+  //         error: 'Bad Request',
+  //         message: 'User ID is required. Please ensure you are logged in.',
+  //         type: 'Client Error',
+  //       });
+  //       return;
+  //     }
+  
+  //     // Get the article details from the database
+  //     const articles = await knex('article_upload')
+  //       .join('order_article', 'article_upload.order_article_id', 'order_article.id')
+  //       .where({
+  //         'article_upload.recipient_id': recipient_id
+  //       })
+  //       .select('article_upload.file_url', 'order_article.title');
+  
+  //     if (!articles.length) {
+  //       res.status(404).json({
+  //         status: 404,
+  //         error: 'Not Found',
+  //         message: 'No articles found for this user.',
+  //         type: 'Client Error',
+  //       });
+  //       return;
+  //     }
+  
+  //     // Initialize an array to hold the PDF contents
+  //     const pdfContents = [];
+  
+  //     // Loop through the articles and fetch the PDF content for each
+  //     for (const article of articles) {
+  //       const response = await axios.get(article.file_url, {
+  //         responseType: 'arraybuffer'
+  //       });
+  
+  //       const data = await PDFParser(response.data);
+  //       pdfContents.push({
+  //         title: article.title,
+  //         content: data.text,
+  //         fileUrl: article.file_url
+  //       });
+  //     }
+  
+  //     res.status(200).json({
+  //       status: 200,
+  //       data: pdfContents,
+  //       message: 'PDF content extracted successfully',
+  //       type: 'Success',
+  //     });
+  
+  //   } catch (error) {
+  //     console.error('Error extracting PDF content:', error);
+  //     res.status(500).json({
+  //       status: 500,
+  //       error: 'Internal Server Error',
+  //       message: 'Failed to extract PDF content',
+  //       type: 'Server Error',
+  //       details: error instanceof Error ? error.message : 'Unknown error',
+  //     });
+  //   }
+  // };
   
