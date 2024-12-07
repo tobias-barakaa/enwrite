@@ -2,6 +2,8 @@ import nodemailer from 'nodemailer';
 import { Request, Response } from 'express';
 import knex from "../db/db";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+
 
 
 
@@ -35,7 +37,11 @@ export const sendPasswordLink = async (req: Request, res: Response): Promise<voi
         return;
       }
   
-      const verifyToken = jwt.sign({ id: user.id, email: user.email }, process.env.ACCESS_SECRET, { expiresIn: '120s' });
+      const accessSecret = process.env.ACCESS_SECRET;
+      if (!accessSecret) {
+        throw new Error("ACCESS_SECRET is not defined in environment variables");
+      }
+      const verifyToken = jwt.sign({ id: user.id, email: user.email }, accessSecret, { expiresIn: '120s' });
   
       await knex('email_verification_tokens').insert({
         user_id: user.id,
@@ -63,82 +69,80 @@ export const sendPasswordLink = async (req: Request, res: Response): Promise<voi
       res.status(500).json({ message: "An error occurred during the email verification process", status: 500 });
     }
   };
+ 
   
 
-
-
-
-
-
-export const sendPasswordLink = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { email } = req.body;
-
-    // Validate email
-    if (!email) {
-      res.status(400).json({
-        success: false,
-        message: "Email is required",
-      });
+  export const passwordForgot = async (req: Request, res: Response): Promise<void> => {
+    const { id, token } = req.params;
+  
+    try {
+      console.log('ID:', id, 'Token:', token); 
+  
+      const validUser = await knex('email_verification_tokens').where({ user_id: id, verifyToken: token }).first();
+      console.log('Valid User:', validUser); 
+  
+      if (!validUser) {
+        res.status(404).json({ message: 'User or token not found' })
+        return;
+      }
+  
+      const accessSecret = process.env.ACCESS_SECRET;
+      if (!accessSecret) {
+        throw new Error("ACCESS_SECRET is not defined in environment variables");
+      }
+      const verifyToken = jwt.verify(token, accessSecret);
+      console.log('Verified Token:', verifyToken); 
+  
+      if (validUser && verifyToken) {
+        res.status(200).json({ validUser, status:200 })
+        return;
+      }
+    } catch (error) {
+      res.status(401).json({ message: 'Token Expired try to login again', status: 401 })
       return;
     }
+  };
 
-    // Check if the user exists in the database
-    const user = await knex("users").where("email", email).first();
-    if (!user) {
-      res.status(404).json({
-        success: false,
-        message: "No account associated with this email",
-      });
+
+  export const changePassword = async (req: Request, res: Response): Promise<void> => {
+    const { id, token } = req.params;
+    const { newPassword, confirmPassword } = req.body;
+    
+    console.log(newPassword, confirmPassword, 'Received values in backend');
+    
+    if(newPassword !== confirmPassword) {
+      res.status(400).json({ message: "Passwords do not match" })
       return;
     }
+  
+    try {
+      const validUser = await knex('email_verification_tokens').where({ user_id: id, verifyToken: token }).first();
+  
+      if (!validUser) {
+        res.status(404).json({ message: 'User or token not found' })
+        return;
+      }
+  
+      const accessSecret = process.env.ACCESS_SECRET;
+      if (!accessSecret) {
+        throw new Error("ACCESS_SECRET is not defined in environment variables");
+      }
+      const verifyToken = jwt.verify(token, accessSecret);
+  
+      if (validUser && verifyToken) {
 
-    // Generate a password reset token (valid for 1 hour)
-    const token = jwt.sign(
-      { id: user.id },
-      process.env.RESET_PASSWORD_SECRET as string,
-      { expiresIn: "1h" }
-    );
-
-    // Create reset password link
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-
-    // Set up nodemailer transporter
-    const transporter = nodemailer.createTransport({
-      service: "gmail", // Use your email service
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    // Email options
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Password Reset Request",
-      html: `
-        <p>Hello ${user.name},</p>
-        <p>You requested to reset your password. Click the link below to reset it:</p>
-        <a href="${resetLink}" target="_blank">${resetLink}</a>
-        <p>This link will expire in 1 hour.</p>
-        <p>If you didn't request a password reset, please ignore this email.</p>
-      `,
-    };
-
-    // Send the email
-    await transporter.sendMail(mailOptions);
-
-    res.status(200).json({
-      success: true,
-      message: "Password reset link sent to your email address",
-    });
-  } catch (error) {
-    console.error("Error sending password reset link:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while sending the password reset link",
-      details: error instanceof Error ? error.message : "Unknown error",
-    });
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        // const hashedPassword = await hashPassword(newPassword);
+  
+        await knex('users').where({ id }).update({ password: hashedPassword });
+        res.status(201).json({ message: 'Password updated successfully', status: 201 })
+        return;
+      }
+    } catch (error) {
+      res.status(401).json({ message: 'Token Expired. Try to log in again.' })
+      return;
+    }
   }
-};
+
+
+

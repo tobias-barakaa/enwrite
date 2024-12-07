@@ -5,10 +5,13 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import compression from 'compression';
+import morgan from 'morgan';
 import userRoutes from './routes/auth.route';
 import orderRoutes from './routes/order.route';
 import adminRoute from './routes/admin/auth.admin.route';
 import orderRoute from './routes/admin/order.admin.route';
+import forgotRoute from './routes/auth.forgot.password.route';
+
 
 dotenv.config();
 
@@ -16,6 +19,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
+app.use(morgan('dev')); 
 app.use(compression());
 app.use(cookieParser());
 
@@ -58,6 +62,7 @@ app.use("/api", userRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/admin', adminRoute);
 app.use('/api/admin/order', orderRoute);
+app.use('/api/v4/forgot-password', forgotRoute);
 
 
 export default app;
