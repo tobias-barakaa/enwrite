@@ -234,3 +234,73 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<vo
     }
 };
 
+
+export const google = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { name, email, googlePhotoUrl } = req.body;
+    try {
+      // Check if the user already exists
+      const user = await knex('users').where({ email }).first();
+      if (user) {
+        const accessToken = jwt.sign({ id: user.id }, process.env.ACCESS_SECRET || "default_access_secret", { expiresIn: "30d" });
+
+        // set as only cookie
+        res.cookie('jwt', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000 
+        })
+        res.json({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          profile_pic: user.profile_pic,
+          role: user.role_id,
+          balance: user.balance,
+          created_at: user.created_at,
+          updated_at: user.updated_at,
+          message: "Successfully logged in 😁",
+        });
+      } else {
+        // Create a new user
+        const generatedPassword = Math.random().toString(36).slice(-8);
+        const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+        const newUser = await knex('users').insert({
+          username: name.toLowerCase().split(' ').join('') + Math.random().toString(36).slice(-5),
+          email,
+          password: hashedPassword,
+          profile_pic: googlePhotoUrl,
+          role_id: 1,
+          balance: 0.0,
+          created_at: knex.fn.now(),
+          updated_at: knex.fn.now(),
+        }).returning('*');
+  
+        // Generate JWT for the new user
+        const accessToken = jwt.sign({ id: user.id }, process.env.ACCESS_SECRET || "default_access_secret", { expiresIn: "30d" });
+
+        // set as only cookie
+        res.cookie('jwt', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000 
+        })
+        res.json({
+          id: newUser[0].id,
+          username: newUser[0].username,
+          email: newUser[0].email,
+          profile_pic: newUser[0].profile_pic,
+          role: newUser[0].role_id,
+          balance: newUser[0].balance,
+          created_at: newUser[0].created_at,
+          updated_at: newUser[0].updated_at,
+          message: "Successfully signed up 😁",
+        });
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: "An error occurred during login" });
+    }
+  };

@@ -106,6 +106,7 @@ export const sendPasswordLink = async (req: Request, res: Response): Promise<voi
 
   export const changePassword = async (req: Request, res: Response): Promise<void> => {
     const { id, token } = req.params;
+    console.log('idee, tokeen', id, token);
     const { newPassword, confirmPassword } = req.body;
     
     console.log(newPassword, confirmPassword, 'Received values in backend');
@@ -135,7 +136,7 @@ export const sendPasswordLink = async (req: Request, res: Response): Promise<voi
         // const hashedPassword = await hashPassword(newPassword);
   
         await knex('users').where({ id }).update({ password: hashedPassword });
-        res.status(201).json({ message: 'Password updated successfully', status: 201 })
+        res.status(201).json({ message: 'Password updated successfullyyjdkf', status: 201 })
         return;
       }
     } catch (error) {
