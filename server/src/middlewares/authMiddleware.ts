@@ -16,12 +16,14 @@ export const protectUser = async (req: Request, res: Response, next: NextFunctio
 
       // Verify the JWT token
       const decoded = jwt.verify(token, process.env.ACCESS_SECRET) as jwt.JwtPayload;
+      console.log(decoded, 'decoded');
 
       // Fetch user data without password
       const user = await knex('users')
         .select('id', 'username', 'email')
         .where({ id: decoded.userId })
         .first();
+      console.log(user, 'usersss')
 
       if (!user) {
         res.status(401).json({ message: 'Unauthorized: User not found' });

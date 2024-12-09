@@ -10,7 +10,7 @@ router.post('/v2/logs/logout', logout);
 // router.get('/profile', );
 
 // google
-router.post('/google', google)
+router.post('/v1/google', google);
 
 
 export default router;

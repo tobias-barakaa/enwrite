@@ -427,8 +427,12 @@ interface Invoice {
 export const getUserInvoices = async (req: Request, res: Response): Promise<void> => {
   try {
     // Get user ID from authenticated request
-  const userId = req.user?.id; 
+    const userId = req.user?.id;
 
+    if (!userId) {
+      res.status(400).json({ message: 'User ID is required' });
+      return;
+    }
 
     // Fetch all invoices for the user with related order details
     const invoices = await knex('invoices')
@@ -441,18 +445,20 @@ export const getUserInvoices = async (req: Request, res: Response): Promise<void
       .where('invoices.user_id', userId)
       .orderBy('invoices.created_at', 'desc');
 
+    // Respond with an empty array if no invoices are found
     if (!invoices.length) {
-      res.status(404).json({
-        message: 'No invoices found for this user'
+      res.status(200).json({
+        message: 'No invoices found for this user',
+        invoices: []
       });
+      return;
     }
 
+    // Respond with the invoices
     res.status(200).json({
       message: 'Invoices retrieved successfully',
       invoices
     });
-    return;
-
   } catch (error) {
     console.error('Error fetching invoices:', error);
     res.status(500).json({
@@ -461,6 +467,7 @@ export const getUserInvoices = async (req: Request, res: Response): Promise<void
     });
   }
 };
+
 
 const updateInvoicePayment = async (
   invoiceId: string, 
