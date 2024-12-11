@@ -28,4 +28,8 @@
     background: #0066ff;
     transition: width 0.3s ease;
   }
+
   
+  .hero-page{
+    padding: 40px;
+  }

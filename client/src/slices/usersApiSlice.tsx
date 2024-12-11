@@ -17,6 +17,13 @@ interface UserResponse {
   // add other user properties
 }
 
+interface Google {
+  name: string;
+  email: string;
+  photoURL: string;
+
+}
+
 const usersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<UserResponse, LoginData>({
@@ -40,11 +47,19 @@ const usersApiSlice = apiSlice.injectEndpoints({
         url: `${LOGIN_URL}/logs/logout`,
         method: "POST",
       })
+    }),
+    google: builder.mutation<UserResponse, Google>({
+      query: (data) => ({
+        url: `${USERS_URL}/google`,
+        method: "POST",
+        body: data
+      })
     })
-  }),
+  })
+ 
 });
 
-export const { useLoginMutation, useRegisterMutation, useLogoutMutation } = usersApiSlice;
+export const { useLoginMutation, useRegisterMutation, useLogoutMutation, useGoogleMutation } = usersApiSlice;
 
 // export const usersApiSlice = apiSlice.injectEndpoints({
 //   endpoints: (builder) => ({

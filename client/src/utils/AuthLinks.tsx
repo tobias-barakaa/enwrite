@@ -9,7 +9,7 @@ const AuthLinks: React.FC = () => {
         Are you new? <Link to="/get-started">Sign UP</Link>
       </span>
       <span>
-        <Link to="/forgot-password">Forgot Password</Link>
+        <Link to="/password-reset">Forgot Password</Link>
       </span>
     </p>
   );

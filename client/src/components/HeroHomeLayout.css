@@ -1,0 +1,9 @@
+@font-face {
+    font-family: ff;
+    src: url("../../utils/heading/poppins.light-italic.ttf");
+  }
+  
+  .heading-title {
+    /* background-color: #0a0a0a;  */
+    font-family: ff;
+  }

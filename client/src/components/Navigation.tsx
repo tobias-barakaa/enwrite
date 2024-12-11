@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { MoveRight } from 'lucide-react';
 import enwrite from '../assets/images/enwrite.png';
 import { NavLink } from 'react-router-dom';
+import PricingDropdown from './PricingDropdown';
 
 // Only keep the essential custom styles that can't be achieved with Bootstrap utilities
 const styles = `
@@ -36,10 +37,10 @@ const Navigation: React.FC = () => {
   return (
     <>
       <style>{styles}</style>
-      <Container className="mt-4">
+      <Container className="mt-0">
       <Navbar
-  className="mx-auto rounded-pill custom-nav-border bg-transparent"
-  style={{ position: "fixed", width: '650px', height: '50px', padding: '10px' }}
+  className="mx-auto rounded-pill custom-nav-border"
+  style={{ position: "fixed", width: '650px', height: '50px', padding: '10px', backgroundColor: "#343a40" }}
 >
           <Nav className="w-100 px-3 d-flex justify-content-between align-items-center">
             <NavLink to="/">
@@ -55,11 +56,11 @@ const Navigation: React.FC = () => {
             </Navbar.Brand>
             </NavLink>
 
-            <Nav.Link href="#pricing" className="text-white p-0">
-              Pricing
-            </Nav.Link>
-            <Nav.Link href="#blog" className="text-white p-0">
+            <NavLink to="blog" className="text-white p-0">
               Blog
+            </NavLink>
+            <Nav.Link href="#Pricing" className="text-white p-0">
+              <PricingDropdown />
             </Nav.Link>
             <NavLink to="get-started">
             <Button 

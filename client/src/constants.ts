@@ -12,3 +12,5 @@ export const ADMIN_USERS_URL = '/api/admin/v5'
 
 export const UPLOAD_URL = '/api/admin/order'
 
+export const FORGOT_PASSWORD_URL = '/api/v4/forgot-password';
+

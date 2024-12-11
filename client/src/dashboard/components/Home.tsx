@@ -4,6 +4,8 @@ import { User } from 'lucide-react';
 import HeroSection from './HeroSection';
 
 const Home: React.FC = () => {
+
+    
   return (
     <>
     <Container >

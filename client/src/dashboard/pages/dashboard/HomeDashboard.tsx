@@ -2,6 +2,7 @@ import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { User } from 'lucide-react';
 import HeroSection from '../../components/HeroSection';
+import UserInfo from './UserInfo';
 
 const HomeDashboard: React.FC = () => {
   return (
@@ -27,9 +28,8 @@ const HomeDashboard: React.FC = () => {
     </Col>
     <Col>
       <div>
-        <strong>Tobias81</strong> <span>(mystats | nofeedback)</span>
+        <UserInfo />
       </div>
-      <div>Billing Code: 23232423</div>
     </Col>
 
     {/* Right Side */}

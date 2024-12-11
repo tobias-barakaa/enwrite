@@ -24,6 +24,11 @@ import Orders from './admin/pages/order/Orders';
 import AdminHeader from './admin/pages/AdminHeader';
 import HomeAdmin from './admin/pages/HomeAdmin';
 import Completed from './dashboard/pages/completed/Completed';
+import PasswordReset from './pages/PasswordReset';
+import TokenExpired from './components/TokenExpired';
+import ForgotPassword from './pages/ForgotPassword';
+import BlogPost from './components/BlogPost';
+import Faq from './dashboard/components/Faq';
 
 
 const router = createBrowserRouter([
@@ -43,7 +48,27 @@ const router = createBrowserRouter([
       path: "login",  
       element: <Login />,
     },
+    {
+      path: "blog",
+      element: <BlogPost />
+    },
+    {
+      path: "faq",
+      element: <Faq />
+    }
   ]
+},
+{
+  path: "/password-reset",
+  element: <PasswordReset />
+},
+{
+  path: "/forgot-password/:id/:token",
+  element: <ForgotPassword />
+},
+{
+  path: "/forgot-password/token-expired",
+  element: <TokenExpired />
 },
 
 {
@@ -140,6 +165,7 @@ const router = createBrowserRouter([
       path: 'orders',
       element: <Orders />
     }
+
     
   ]
 },

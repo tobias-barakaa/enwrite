@@ -15,24 +15,8 @@ import {
 } from "react-bootstrap";
 
 
-interface Props {
-  fileUrl: string;
-  fileName?: string;
-}
 
-interface PdfContent {
-  title: string;
-  fileUrl: string;
-  content: string;
-}
-
-interface Props {
-  pdfContent: PdfContent[];
-  isLoading: boolean;
-  isError: boolean;
-}
-
-const Completed: React.FC<Props> = ({ fileUrl, fileName }) => {
+const Completed: React.FC = () => {
   const [satisfaction, setSatisfaction] = useState<string>(
     "Select Satisfaction"
   );
@@ -96,7 +80,7 @@ const Completed: React.FC<Props> = ({ fileUrl, fileName }) => {
 
   const downloadPDF = async () => {
     try {
-      const letme = fileUrl || response?.data?.[0]?.file_url;
+      const letme = response?.data?.[0]?.file_url;
       if (!letme) throw new Error("Failed to fetch the PDF");
 
       // Renamed to fetchResponse to avoid conflict
@@ -106,7 +90,7 @@ const Completed: React.FC<Props> = ({ fileUrl, fileName }) => {
       const urlObject = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = urlObject;
-      link.download = fileName || "document.pdf";
+      link.download = "document.pdf";
 
       document.body.appendChild(link);
       link.click();

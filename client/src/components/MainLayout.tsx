@@ -6,6 +6,7 @@ import Footer from '../dashboard/components/Footer';
 const MainLayout: React.FC = () => {
   return (
     <>
+   
       <Navigation />
       <Outlet />
       <div className='' style={{ background: "black" }}>
