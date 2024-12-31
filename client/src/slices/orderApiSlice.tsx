@@ -22,7 +22,7 @@ interface typeOrder {
   orderId: string;   
 }
 
-interface OrderResponse {
+export interface OrderResponse {
   message: string;  
   order: Order;   
 }
@@ -61,8 +61,8 @@ const ordersApiSlice = apiSlice.injectEndpoints({
     getOrder: builder.query<OrderResponse, string>({
       query: (id: string) => `${ORDER_URL}/getone/${id}`,
     }),
-    getOrdersByUser: builder.query<OrderResponse[], string>({
-      query: (id: string) => `${ORDER_URL}/getall/${id}`,
+    getOrdersByUser: builder.query({
+      query: () => `${ORDER_URL}/getall`,
     }),
     payOrder: builder.mutation<typeOrder, { orderId: string; details: PaypalDetails }>({
       query: ({ orderId, details }) => ({

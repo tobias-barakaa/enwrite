@@ -1,7 +1,6 @@
 import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
-import { ShoppingCart } from 'lucide-react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Container } from 'react-bootstrap';
+import { Outlet } from 'react-router-dom';
 
 const HirePage: React.FC = () => {
   

@@ -21,7 +21,15 @@ interface Order {
 }
 
 const WorkRoom: React.FC = () => {
-  const { data: response, isLoading, isError } = useGetOrdersByUserQuery([]);
+
+  const userInfoString = localStorage.getItem("userInfo");
+
+let userId: string | null = null;
+if (userInfoString) {
+  const userInfo = JSON.parse(userInfoString);
+  userId = userInfo?.data?.user?.id || null; // Safely retrieve the userId
+}
+  const { data: response, isLoading, isError } = useGetOrdersByUserQuery(userId || '');
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {

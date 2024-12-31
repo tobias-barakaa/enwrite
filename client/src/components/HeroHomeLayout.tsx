@@ -79,7 +79,7 @@ const HeroHomeLayout: React.FC = () => {
   return (
     <HeroSection>
       <HeroTitle  className="heading-title">
-        <span>Refresh</span> your email <br /> game
+        <span>Bespoke</span> your Writers <br /> game
         with an intuitive <br />
         email builder.
       </HeroTitle>

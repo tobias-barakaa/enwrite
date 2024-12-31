@@ -1,19 +1,22 @@
 import React from 'react'
-import HeroSection from '../components/HeroSection'
-import Portfolio from '../components/Portfolio'
-import Services from '../components/Services'
-import Testimonials from '../components/Testimonials'
+
 import GetStarted from '../components/GetStarted'
 import HeroHomeLayout from '../components/HeroHomeLayout'
+import LayoutSection from '../components/LayoutSection'
+import CustomLayout from '../components/CustomLayout'
+import SmoothFeatures from '../components/SmoothFeatures'
+import TestimonialsSection from '../components/TestimonialsSection'
 
 const HomePage: React.FC = () => {
   return (
     <div>
       <HeroHomeLayout />
       {/* // <HeroSection /> */}
-      <Portfolio />
-      <Services />
-      <Testimonials />
+      <LayoutSection />
+      <CustomLayout />
+      <SmoothFeatures />
+      <TestimonialsSection />
+      {/* <Services /> */}
       <GetStarted />
       {/* <Faq /> */}
     </div>

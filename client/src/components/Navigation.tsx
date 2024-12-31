@@ -7,9 +7,10 @@ import { NavLink } from 'react-router-dom';
 import PricingDropdown from './PricingDropdown';
 
 // Only keep the essential custom styles that can't be achieved with Bootstrap utilities
+// background-color: #1b1b1f;
 const styles = `
 body {
-  background-color: #1b1b1f;
+  background-color: #f6f9fc;
 }
 
 .custom-nav-border {

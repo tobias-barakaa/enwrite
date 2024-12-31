@@ -1,0 +1,15 @@
+.feature-content h4 {
+    animation: colorChange 3s infinite alternate;
+  }
+  
+  @keyframes colorChange {
+    0% {
+      color: #000;
+    }
+    50% {
+      color: #f00;
+    }
+    100% {
+      color: #800080;
+    }
+  }
